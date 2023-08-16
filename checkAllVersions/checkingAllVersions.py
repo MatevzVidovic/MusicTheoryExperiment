@@ -119,7 +119,20 @@ def makefileScale(boolNotes, startingTonic, isMajor, totalNumOfHalfSteps):
             sine_wave = get_sine_wave(frequency, duration=1, amplitude=2048)
             final_sine = np.concatenate((final_sine, sine_wave))
 
-    name = octave[startingTonic] + ("major" if isMajor else "minor") + "_" + str(totalNumOfHalfSteps) + "halfStepScale" + ".wav"
+    
+    # se dodajanje tonika se na konec, da se lepo razveze
+    currNote = octave[startingTonic] + "5"
+    frequency = note_freqs[currNote]
+    sine_wave = get_sine_wave(frequency, duration=1, amplitude=2048)
+    final_sine = np.concatenate((final_sine, sine_wave))
+
+    notesString = ""
+    for i in range(len(boolNotes)):
+        if boolNotes[i]:
+            notesString += octave[i]
+
+
+    name = octave[startingTonic] + ("major" if isMajor else "minor") + "_" + str(totalNumOfHalfSteps) + "halfSteps _ " + notesString + ".wav"
     wavfile.write(name, rate=44100, data=final_sine.astype(np.int16))
     return
 
@@ -199,7 +212,7 @@ def allPossibleSuchMantises(forMajor, numOfHalfSteps):
 
 def main():
     # numOfHalfsteps = int(input("Number of half steps in the scale: "))
-    for numOfHalfsteps in range(14, 100, 2):
+    for numOfHalfsteps in range(14, 50, 2):
         allPossibleSuchMantises(True, numOfHalfsteps)
         allPossibleSuchMantises(False, numOfHalfsteps)
 main()

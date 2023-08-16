@@ -81,7 +81,6 @@ def makefileScale(boolNotes, startingTonic):
             final_sine = np.concatenate((final_sine, sine_wave))
     
     # se dodajanje tonika se na konec, da se lepo razveze
-    # Vem da je convoluted, ampak sem samo prekopiral pa ne bom diral
     currNote = octave[startingTonic] + "5"
     frequency = note_freqs[currNote]
     sine_wave = get_sine_wave(frequency, duration=1, amplitude=2048)
