@@ -51,8 +51,8 @@ allKeysThatWork = list()
 
 
 # Get middle C frequency
-note_freqs, note_freqs_breversed = get_piano_notes()
-frequency = note_freqs['C4']
+note_freqs, note_freqs_reversed = get_piano_notes()
+# frequency = note_freqs['C4']
 
 octave = ['C', 'c', 'D', 'd', 'E', 'F', 'f', 'G', 'g', 'A', 'a', 'B']
 key_constant = '4'
@@ -81,31 +81,125 @@ key_constant = '4'
 
 
 
+def nextIter(currentNotes, totalSumOfHalfSteps):
+    nextNotes = currentNotes.copy()
+    for i in range(len(currentNotes)):
+        nextNotes[i] = (currentNotes[i] + totalSumOfHalfSteps) % 12
+    return nextNotes
 
+def setCurrentToTrue (boolListOfNotesSoFar, currentNotes):
+    for i in currentNotes:
+        boolListOfNotesSoFar[i] = True
+    return
 
-
-is_in_for_each = [False] * 12
-is_in_for_each_previous = is_in_for_each
-
-for startingNote in range(0, 12):
-
-    ix = startingNote
-    relative_note = ix % 12
-
-    is_in_for_each[relative_note] = True
-
-    while (not (lists_identical(is_in_for_each, is_in_for_each_previous))):
-        ix += 1
-        relative_note = ix % 12
-        relative_note[ix] = True
-
-
-    if not lists_identical(is_in_for_each, octave):
-        allKeysThatWork.append(is_in_for_each)
+def isAllTrue (boolListOfNotesSoFar):
+    for i in boolListOfNotesSoFar:
+        if not i:
+            return False
+    return True
 
 
 
 
-# Pure sine wave
-sine_wave = get_sine_wave(frequency, duration=2, amplitude=2048)
-wavfile.write('pure_c.wav', rate=44100, data=sine_wave.astype(np.int16))
+
+majorMantis = [0, 2, 4, 5, 7, 9, 11]
+minorMantis = [0, 2, 3, 5, 7, 8, 10]
+
+# majorStarPos = majorMantis.copy()
+# minorStartPos = minorMantis.copy()
+
+
+currentMantis = majorMantis.copy()
+currentNotes = currentMantis.copy()
+currentTotalOfHalfNotes = 12
+
+listOfNotesSoFar = [False] * 12
+listOfTonicsSoFar = [False] * 12
+
+setCurrentToTrue(listOfNotesSoFar, currentNotes)
+listOfTonicsSoFar[currentNotes[0]] = True
+currentTonic = currentNotes[0]
+
+nextNotes = nextIter(currentNotes, currentTotalOfHalfNotes)
+nextTonic = nextNotes[0]
+
+
+while (not listOfTonicsSoFar[nextTonic]):
+    currentNotes = nextNotes
+
+    setCurrentToTrue(listOfNotesSoFar, currentNotes)
+    listOfTonicsSoFar[currentNotes[0]] = True
+    currentTonic = currentNotes[0]
+
+    nextNotes = nextIter(currentNotes, currentTotalOfHalfNotes)
+    nextTonic = nextNotes[0]
+
+if not isAllTrue(listOfNotesSoFar):
+    print(listOfNotesSoFar)
+
+
+def makefileScale(boolNotes, startingTonic, isMajor, totalNumOfHalfSteps):
+    
+    final_sine = np.empty(0)
+    for i in range(startingTonic, 12):
+        if(boolNotes[i]):
+            currNote = octave[i] + "4"
+            frequency = note_freqs[currNote]
+            sine_wave = get_sine_wave(frequency, duration=2, amplitude=2048)
+            final_sine = np.concatenate((final_sine, sine_wave))
+    
+    for i in range(0, startingTonic):
+        if(boolNotes[i]):
+            currNote = octave[i] + "5"
+            frequency = note_freqs[currNote]
+            sine_wave = get_sine_wave(frequency, duration=2, amplitude=2048)
+            final_sine = np.concatenate((final_sine, sine_wave))
+
+    name = octave[startingTonic] + ("major" if isMajor else "minor") + "_" + str(totalNumOfHalfSteps) + "halfStepScale" + ".wav"
+    wavfile.write(name, rate=44100, data=final_sine.astype(np.int16))
+    return
+
+
+makefileScale(listOfNotesSoFar, 0, True, 12)
+makefileScale(listOfNotesSoFar, 2, True, 12)
+makefileScale(listOfNotesSoFar, 4, True, 12)
+makefileScale(listOfNotesSoFar, 5, True, 12)
+
+
+
+
+
+
+
+
+
+# is_in_for_each = [False] * 12
+# is_in_for_each_previous = is_in_for_each
+
+# for startingNote in range(0, 12):
+
+#     ix = startingNote
+#     relative_note = ix % 12
+
+#     is_in_for_each[relative_note] = True
+
+#     while (not (lists_identical(is_in_for_each, is_in_for_each_previous))):
+#         ix += 1
+#         relative_note = ix % 12
+#         relative_note[ix] = True
+
+
+#     if not lists_identical(is_in_for_each, octave):
+#         allKeysThatWork.append(is_in_for_each)
+
+
+
+
+# # Pure sine wave
+# sine_wave = get_sine_wave(frequency, duration=2, amplitude=2048)
+# print(sine_wave)
+# sine_wave2 = get_sine_wave(frequency*2, duration=2, amplitude=202)
+# final_sine = np.concatenate((sine_wave, sine_wave2))
+# print(final_sine)
+
+# wavfile.write('pure_c.wav', rate=44100, data=final_sine.astype(np.int16))
