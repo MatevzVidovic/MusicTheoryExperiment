@@ -102,42 +102,6 @@ def isAllTrue (boolListOfNotesSoFar):
 
 
 
-majorMantis = [0, 2, 4, 5, 7, 9, 11]
-minorMantis = [0, 2, 3, 5, 7, 8, 10]
-
-# majorStarPos = majorMantis.copy()
-# minorStartPos = minorMantis.copy()
-
-
-currentMantis = majorMantis.copy()
-currentNotes = currentMantis.copy()
-currentTotalOfHalfNotes = 12
-
-listOfNotesSoFar = [False] * 12
-listOfTonicsSoFar = [False] * 12
-
-setCurrentToTrue(listOfNotesSoFar, currentNotes)
-listOfTonicsSoFar[currentNotes[0]] = True
-currentTonic = currentNotes[0]
-
-nextNotes = nextIter(currentNotes, currentTotalOfHalfNotes)
-nextTonic = nextNotes[0]
-
-
-while (not listOfTonicsSoFar[nextTonic]):
-    currentNotes = nextNotes
-
-    setCurrentToTrue(listOfNotesSoFar, currentNotes)
-    listOfTonicsSoFar[currentNotes[0]] = True
-    currentTonic = currentNotes[0]
-
-    nextNotes = nextIter(currentNotes, currentTotalOfHalfNotes)
-    nextTonic = nextNotes[0]
-
-if not isAllTrue(listOfNotesSoFar):
-    print(listOfNotesSoFar)
-
-
 def makefileScale(boolNotes, startingTonic, isMajor, totalNumOfHalfSteps):
     
     final_sine = np.empty(0)
@@ -160,10 +124,91 @@ def makefileScale(boolNotes, startingTonic, isMajor, totalNumOfHalfSteps):
     return
 
 
-makefileScale(listOfNotesSoFar, 0, True, 12)
-makefileScale(listOfNotesSoFar, 2, True, 12)
-makefileScale(listOfNotesSoFar, 4, True, 12)
-makefileScale(listOfNotesSoFar, 5, True, 12)
+def addToWholeArray(array, num):
+    for i in range(len(array)):
+        array[i] += num
+    return array
+
+
+def allPossibleSuchMantises(forMajor, numOfHalfSteps):
+
+    listOfPossibleScales = list()
+
+    if(numOfHalfSteps <= 12):
+        print("notEnoughSteps")
+        return
+    
+    if(numOfHalfSteps % 2 == 1):
+        print("Currently needs to be divisible by 2")
+        return
+    
+    
+
+    majorMantis = [0, 2, 4, 5, 7, 9, 11]
+    minorMantis = [0, 2, 3, 5, 7, 8, 10]
+
+    startingMantis = majorMantis if forMajor else minorMantis
+
+    numOfFullStepsToAdd = int((numOfHalfSteps - 12) / 2)
+
+    for newOnEnd in range(numOfFullStepsToAdd):
+        for newOnStart in range((numOfFullStepsToAdd - newOnEnd)):
+
+            currentMantis = startingMantis.copy()
+            currentMantis = addToWholeArray(currentMantis, newOnStart * 2)
+            for i in range(0, newOnStart, -1):
+                currentMantis.insert(0, 2*i)
+
+            finalElement = currentMantis[-1]
+            for i in range(newOnEnd):
+                currentMantis.append(finalElement + 2*(i+1))
+
+
+            currentNotes = currentMantis.copy()
+            for i in range(len(currentNotes)):
+                currentNotes[i] %= 12
+
+            listOfNotesSoFar = [False] * 12
+            listOfTonicsSoFar = [False] * 12
+
+            setCurrentToTrue(listOfNotesSoFar, currentNotes)
+            listOfTonicsSoFar[currentNotes[0]] = True
+            currentTonic = currentNotes[0]
+
+            nextNotes = nextIter(currentNotes, numOfHalfSteps)
+            nextTonic = nextNotes[0]
+
+
+            while (not listOfTonicsSoFar[nextTonic]):
+                currentNotes = nextNotes
+
+                setCurrentToTrue(listOfNotesSoFar, currentNotes)
+                listOfTonicsSoFar[currentNotes[0]] = True
+                currentTonic = currentNotes[0]
+
+                nextNotes = nextIter(currentNotes, numOfHalfSteps)
+                nextTonic = nextNotes[0]
+
+            if not isAllTrue(listOfNotesSoFar):
+                listOfPossibleScales.append(listOfNotesSoFar)
+                makefileScale(listOfNotesSoFar, 0, forMajor, numOfHalfSteps)
+    
+    return
+
+
+
+def main():
+    # numOfHalfsteps = int(input("Number of half steps in the scale: "))
+    for numOfHalfsteps in range(14, 100, 2):
+        allPossibleSuchMantises(True, numOfHalfsteps)
+        allPossibleSuchMantises(False, numOfHalfsteps)
+main()
+
+
+        
+
+
+
 
 
 
